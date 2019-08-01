@@ -400,22 +400,32 @@ test('JWTCookieStrategy#finalize touches maxAge if session data exists', async t
   await testServer([sessionMiddleware, Handler], async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
-        strategy.serialize({
-          message: 'Hello, World!'
-        })
+        jwt.sign(
+          {
+            data: {
+              message: 'Hello, World!'
+            }
+          },
+          'test',
+          { expiresIn: 5000 }
+        )
       )}; Max-Age=86400; Path=/; HttpOnly`,
       url
     )
     const postResponse = await got.post(url, {
       cookieJar
     })
-    t.deepEqual(postResponse.headers['set-cookie'], [
-      `session=${encodeURIComponent(
-        strategy.serialize({
-          message: 'Hello, World!'
-        })
-      )}; Max-Age=86400; Path=/; HttpOnly`
-    ])
+
+    const match = postResponse.headers['set-cookie']![0].match(
+      /^session=(.+); Max-Age=86400; Path=\/; HttpOnly$/
+    )
+    t.not(match, null)
+    const token = match![1]
+    const decoded = jwt.decode(token) as any
+    t.is(decoded.exp - decoded.iat, 86400)
+    t.deepEqual(decoded.data, {
+      message: 'Hello, World!'
+    })
   })
 })
 
