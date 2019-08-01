@@ -6,7 +6,8 @@
     "prismy",
     "session",
     "cookie",
-    "signed"
+    "signed",
+    "jwt"
   ],
   "author": "Junyoung Choi <rokt33r.choi@gmail.com>",
   "homepage": "https://github.com/prismyland/prismy-session-strategy-jwt-cookie",
