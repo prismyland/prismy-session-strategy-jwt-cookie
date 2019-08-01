@@ -34,7 +34,6 @@ type InternalCookieStrategyOptions = Required<
 export class JWTCookieStrategy implements Strategy {
   value?: unknown
   options: InternalCookieStrategyOptions
-  cookieStoreSymbol = Symbol('prismy-session-cookie-store')
 
   constructor(options: JWTCookieStrategyOptions) {
     this.options = {
