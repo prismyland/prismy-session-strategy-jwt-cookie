@@ -1,67 +1,10 @@
-import test from 'ava'
+import test, { ExecutionContext } from 'ava'
 import createSession, { SessionState } from 'prismy-session'
 import { testServer } from 'prismy-test-server'
 import got from 'got'
 import { CookieJar } from 'tough-cookie'
 import { JWTCookieStrategy } from '../src'
 import jwt from 'jsonwebtoken'
-
-test('JWTCookieStrategy#finalize saves session.data if changed', async t => {
-  const strategy = new JWTCookieStrategy({
-    secret: 'test'
-  })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      session.data = {
-        message: 'Hello, World!'
-      }
-      return 'OK'
-    }
-  }
-
-  await testServer([sessionMiddleware, Handler], async url => {
-    const postResponse = await got.post(url)
-    t.deepEqual(postResponse.headers['set-cookie'], [
-      `session=${encodeURIComponent(
-        strategy.serialize({
-          message: 'Hello, World!'
-        })
-      )}; Max-Age=86400; Path=/; HttpOnly`
-    ])
-  })
-})
-
-test('JWTCookieStrategy#finalize uses a function to determine secure attribute', async t => {
-  const strategy = new JWTCookieStrategy({
-    secret: 'test',
-    secure: () => true
-  })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      session.data = {
-        message: 'Hello, World!'
-      }
-      return 'OK'
-    }
-  }
-
-  await testServer([sessionMiddleware, Handler], async url => {
-    const postResponse = await got.post(url)
-    t.deepEqual(postResponse.headers['set-cookie'], [
-      `session=${encodeURIComponent(
-        strategy.serialize({
-          message: 'Hello, World!'
-        })
-      )}; Max-Age=86400; Path=/; HttpOnly; Secure`
-    ])
-  })
-})
 
 test('JWTCookieStrategy#loadData returns session data', async t => {
   const cookieJar = new CookieJar()
@@ -126,7 +69,7 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Not JWT
   })
 })
 
-test('JWTCookieStrategy#loadData returns null if session data is invalid(Invalid JWT)', async t => {
+test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong Secret)', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
     secret: 'test'
@@ -383,6 +326,92 @@ test('JWTCookieStrategy#loadData returns null if session data is not defined', a
   })
 })
 
+test('JWTCookieStrategy#finalize saves session.data if changed', async t => {
+  const strategy = new JWTCookieStrategy({
+    secret: 'test'
+  })
+  const { Session, sessionMiddleware } = createSession({
+    strategy
+  })
+  class Handler {
+    async handle(@Session() session: SessionState<any>) {
+      session.data = {
+        message: 'Hello, World!'
+      }
+      return 'OK'
+    }
+  }
+
+  await testServer([sessionMiddleware, Handler], async url => {
+    const postResponse = await got.post(url)
+    verifyJWTCookie(t, postResponse.headers['set-cookie']![0], {
+      secret: 'test',
+      expectedData: {
+        message: 'Hello, World!'
+      }
+    })
+  })
+})
+
+test('JWTCookieStrategy#finalize sets expire date based on maxAge', async t => {
+  const strategy = new JWTCookieStrategy({
+    secret: 'test',
+    maxAge: 3600
+  })
+  const { Session, sessionMiddleware } = createSession({
+    strategy
+  })
+  class Handler {
+    async handle(@Session() session: SessionState<any>) {
+      session.data = {
+        message: 'Hello, World!'
+      }
+      return 'OK'
+    }
+  }
+
+  await testServer([sessionMiddleware, Handler], async url => {
+    const postResponse = await got.post(url)
+    verifyJWTCookie(t, postResponse.headers['set-cookie']![0], {
+      secret: 'test',
+      expectedData: {
+        message: 'Hello, World!'
+      },
+      expectedOptions: 'Max-Age=3600; Path=/; HttpOnly',
+      expectedMaxAge: 3600
+    })
+  })
+})
+
+test('JWTCookieStrategy#finalize uses a function to determine secure attribute', async t => {
+  const strategy = new JWTCookieStrategy({
+    secret: 'test',
+    secure: () => true
+  })
+  const { Session, sessionMiddleware } = createSession({
+    strategy
+  })
+  class Handler {
+    async handle(@Session() session: SessionState<any>) {
+      session.data = {
+        message: 'Hello, World!'
+      }
+      return 'OK'
+    }
+  }
+
+  await testServer([sessionMiddleware, Handler], async url => {
+    const postResponse = await got.post(url)
+    verifyJWTCookie(t, postResponse.headers['set-cookie']![0], {
+      secret: 'test',
+      expectedData: {
+        message: 'Hello, World!'
+      },
+      expectedOptions: 'Max-Age=86400; Path=/; HttpOnly; Secure'
+    })
+  })
+})
+
 test('JWTCookieStrategy#finalize touches maxAge if session data exists', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
@@ -416,15 +445,11 @@ test('JWTCookieStrategy#finalize touches maxAge if session data exists', async t
       cookieJar
     })
 
-    const match = postResponse.headers['set-cookie']![0].match(
-      /^session=(.+); Max-Age=86400; Path=\/; HttpOnly$/
-    )
-    t.not(match, null)
-    const token = match![1]
-    const decoded = jwt.decode(token) as any
-    t.is(decoded.exp - decoded.iat, 86400)
-    t.deepEqual(decoded.data, {
-      message: 'Hello, World!'
+    verifyJWTCookie(t, postResponse.headers['set-cookie']![0], {
+      secret: 'test',
+      expectedData: {
+        message: 'Hello, World!'
+      }
     })
   })
 })
@@ -448,7 +473,7 @@ test('JWTCookieStrategy#finalize does NOT touch maxAge if session data does not 
   })
 })
 
-test('JWTCookieStrategy#finalize destroys session.data if changed to null', async t => {
+test('JWTCookieStrategy#finalize destroys session if changed to null', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
     secret: 'test'
@@ -480,3 +505,31 @@ test('JWTCookieStrategy#finalize destroys session.data if changed to null', asyn
     ])
   })
 })
+
+function verifyJWTCookie(
+  t: ExecutionContext,
+  rawCookie: string,
+  {
+    expectedData,
+    secret,
+    expectedOptions = 'Max-Age=86400; Path=/; HttpOnly',
+    expectedMaxAge = 86400
+  }: {
+    secret: string
+    expectedData: any
+    expectedOptions?: string
+    expectedMaxAge?: number
+  }
+) {
+  const matcher = new RegExp(`^session=(.+); ${expectedOptions}$`)
+  const match = rawCookie.match(matcher)
+  t.not(
+    match,
+    null,
+    `${rawCookie} is not match "session=(.+); ${expectedOptions}"`
+  )
+  const token = match![1]
+  const decodedValue = jwt.verify(token, secret) as any
+  t.is(decodedValue.exp - decodedValue.iat, expectedMaxAge)
+  t.deepEqual(decodedValue.data, expectedData)
+}
