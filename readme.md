@@ -8,7 +8,7 @@ JWT cookie session strategy for prismy
 [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/prismyland/prismy-session-strategy-jwt-cookie.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/prismyland/prismy-session-strategy-jwt-cookie/context:javascript)
 
 ```
-npm i prismy-session prismy-session-strategy-jwt-cookie
+npm i prismy-session prismy-cookie prismy-session-strategy-jwt-cookie
 ```
 
 ## Example
