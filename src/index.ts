@@ -1,6 +1,6 @@
 import { Context } from 'prismy'
 import { cookieSelector, CookieSerializeOptions } from 'prismy-cookie'
-import { Strategy, SessionState } from 'prismy-session'
+import { SessionStrategy, SessionState } from 'prismy-session'
 import jwt, { SignOptions, VerifyOptions } from 'jsonwebtoken'
 
 export interface JWTCookieStrategyOptions {
@@ -31,7 +31,7 @@ type InternalCookieStrategyOptions = Required<
 > &
   Omit<JWTCookieStrategyOptions, DefaultOptionKeys>
 
-export class JWTCookieStrategy implements Strategy {
+export class JWTCookieStrategy implements SessionStrategy {
   value?: unknown
   options: InternalCookieStrategyOptions
 
