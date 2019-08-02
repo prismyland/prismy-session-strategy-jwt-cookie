@@ -11,16 +11,14 @@ test('JWTCookieStrategy#loadData returns session data', async t => {
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         strategy.serialize({
@@ -44,16 +42,14 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Not JWT
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         JSON.stringify({
@@ -74,16 +70,14 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong S
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -109,16 +103,14 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Expired
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -148,16 +140,14 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong A
     secret: 'test',
     algorithm: 'HS256'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -187,16 +177,14 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong I
     secret: 'test',
     issuer: 'test'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -226,16 +214,14 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong S
     secret: 'test',
     audience: 'test'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -265,16 +251,14 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong A
     secret: 'test',
     audience: 'test'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -303,16 +287,14 @@ test('JWTCookieStrategy#loadData returns null if session data is not defined', a
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return session.data
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign({}, 'test')
@@ -330,9 +312,7 @@ test('JWTCookieStrategy#finalize saves session.data if changed', async t => {
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       session.data = {
@@ -342,7 +322,7 @@ test('JWTCookieStrategy#finalize saves session.data if changed', async t => {
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     const postResponse = await got.post(url)
     verifyJWTCookie(t, postResponse.headers['set-cookie']![0], {
       secret: 'test',
@@ -358,9 +338,7 @@ test('JWTCookieStrategy#finalize sets expire date based on maxAge', async t => {
     secret: 'test',
     maxAge: 3600
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       session.data = {
@@ -370,7 +348,7 @@ test('JWTCookieStrategy#finalize sets expire date based on maxAge', async t => {
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     const postResponse = await got.post(url)
     verifyJWTCookie(t, postResponse.headers['set-cookie']![0], {
       secret: 'test',
@@ -388,9 +366,7 @@ test('JWTCookieStrategy#finalize uses a function to determine secure attribute',
     secret: 'test',
     secure: () => true
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       session.data = {
@@ -400,7 +376,7 @@ test('JWTCookieStrategy#finalize uses a function to determine secure attribute',
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     const postResponse = await got.post(url)
     verifyJWTCookie(t, postResponse.headers['set-cookie']![0], {
       secret: 'test',
@@ -417,16 +393,14 @@ test('JWTCookieStrategy#finalize touches maxAge if session data exists', async t
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return 'OK'
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -458,16 +432,14 @@ test('JWTCookieStrategy#finalize does NOT touch maxAge if session data does not 
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       return 'OK'
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     const postResponse = await got.post(url)
     t.is(postResponse.headers['set-cookie'], undefined)
   })
@@ -478,9 +450,7 @@ test('JWTCookieStrategy#finalize destroys session if changed to null', async t =
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, sessionMiddleware } = createSession({
-    strategy
-  })
+  const { Session, SessionMiddleware } = createSession(strategy)
   class Handler {
     async handle(@Session() session: SessionState<any>) {
       session.data = null
@@ -488,7 +458,7 @@ test('JWTCookieStrategy#finalize destroys session if changed to null', async t =
     }
   }
 
-  await testServer([sessionMiddleware, Handler], async url => {
+  await testServer([SessionMiddleware, Handler], async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         strategy.serialize({
