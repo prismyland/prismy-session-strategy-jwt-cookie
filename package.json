@@ -1,6 +1,6 @@
 {
   "name": "prismy-session-strategy-jwt-cookie",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "JWT cookie session strategy for prismy",
   "keywords": [
     "prismy",
