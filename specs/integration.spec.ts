@@ -1,34 +1,32 @@
 import test from 'ava'
-import createSession, { SessionState } from 'prismy-session'
-import { Method } from 'prismy'
-import { testServer } from 'prismy-test-server'
+import createSession, { Session } from 'prismy-session'
+import { prismy, methodSelector, res } from 'prismy'
+import { testHandler } from 'prismy-test'
 import got from 'got'
 import { CookieJar } from 'tough-cookie'
 import { JWTCookieStrategy } from '../src'
 
 test('integration test', async t => {
   const cookieJar = new CookieJar()
-  const { Session, SessionMiddleware } = createSession(
+  const { sessionSelector, sessionMiddleware } = createSession(
     new JWTCookieStrategy({
       secret: 'test'
     })
   )
-  class Handler {
-    async handle(
-      @Method() method: string,
-      @Session() session: SessionState<any>
-    ) {
+  const handler = prismy<[string | undefined, Session]>(
+    [methodSelector, sessionSelector],
+    (method, session) => {
       if (method === 'POST') {
         session.data = { message: 'Hello, World!' }
-        return 'OK'
-      } else {
-        const { data } = session
-        return data.message
+        return res('OK')
       }
-    }
-  }
+      const { data } = session
+      return res((data as any).message)
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     const postResponse = await got.post(url, {
       cookieJar
     })
