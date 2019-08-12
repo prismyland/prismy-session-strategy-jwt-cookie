@@ -14,42 +14,46 @@ npm i prismy-session prismy-cookie prismy-session-strategy-jwt-cookie
 ## Example
 
 ```ts
-import { prismy, Method, BaseHandler, UrlEncodedBody } from 'prismy'
-import createSession, { SessionState } from 'prismy-session'
+import {
+  prismy,
+  methodSelector,
+  createUrlEncodedBodySelector,
+  redirect,
+  res
+} from 'prismy'
+import createSession from 'prismy-session'
 import JWTCookieStrategy from 'prismy-session-strategy-jwt-cookie'
 
-const { Session, SessionMiddleware } = createSession(
+const { sessionSelector, sessionMiddleware } = createSession(
   new JWTCookieStrategy({
     secret: 'RANDOM_HASH'
   })
 )
 
-class MyHandler extends BaseHandler {
-  async handle(
-    @Method() method: string,
-    @Session() session: SessionState,
-    @UrlEncodedBody() body: any
-  ) {
-    if (method === 'POST') {
-      // Update session data
-      session.data = { message: body.message }
-      return this.redirect('/')
-    } else {
-      // Get session data
-      const { data } = session
-      return [
-        '<!DOCTYPE html>',
-        '<body>',
-        `<p>Message: ${data != null ? data.message : 'NULL'}</p>`,
-        '<form action="/" method="post">',
-        '<input name="message">',
-        '<button type="submit">Send</button>',
-        '</form>',
-        '</body>'
-      ].join('')
-    }
-  }
-}
+const urlEncodedBodySelector = createUrlEncodedBodySelector()
 
-export default prismy([SessionMiddleware, MyHandler])
+export default prismy(
+  [methodSelector, sessionSelector, urlEncodedBodySelector],
+  (method, session, body) => {
+    if (method === 'POST') {
+      session.data = { message: body.message }
+      return redirect('/')
+    } else {
+      const { data } = session
+      return res(
+        [
+          '<!DOCTYPE html>',
+          '<body>',
+          `<p>Message: ${data != null ? (data as any).message : 'NULL'}</p>`,
+          '<form action="/" method="post">',
+          '<input name="message">',
+          '<button type="submit">Send</button>',
+          '</form>',
+          '</body>'
+        ].join('')
+      )
+    }
+  },
+  [sessionMiddleware]
+)
 ```

@@ -1,5 +1,5 @@
 import test from 'ava'
-import createSession, { Session } from 'prismy-session'
+import createSession from 'prismy-session'
 import { prismy, methodSelector, res } from 'prismy'
 import { testHandler } from 'prismy-test'
 import got from 'got'
@@ -13,7 +13,7 @@ test('integration test', async t => {
       secret: 'test'
     })
   )
-  const handler = prismy<[string | undefined, Session]>(
+  const handler = prismy(
     [methodSelector, sessionSelector],
     (method, session) => {
       if (method === 'POST') {
