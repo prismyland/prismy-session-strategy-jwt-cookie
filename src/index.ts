@@ -1,6 +1,10 @@
-import { Context } from 'prismy'
-import { cookieSelector, CookieSerializeOptions } from 'prismy-cookie'
-import { SessionStrategy, SessionState } from 'prismy-session'
+import { Context, ResponseObject } from 'prismy'
+import {
+  appendCookie,
+  createCookiesSelector,
+  CookieSerializeOptions
+} from 'prismy-cookie'
+import { SessionStrategy, Session } from 'prismy-session'
 import jwt, { SignOptions, VerifyOptions } from 'jsonwebtoken'
 
 export interface JWTCookieStrategyOptions {
@@ -48,50 +52,58 @@ export class JWTCookieStrategy implements SessionStrategy {
   }
 
   loadData(context: Context): unknown | null {
-    const cookieStore = cookieSelector(context)
-    const cookie = cookieStore.get()
+    const cookies = createCookiesSelector()(context)
 
-    if (cookie[this.options.name] == null) return null
-    const serializedData = cookie[this.options.name]
+    if (cookies[this.options.name] == null) return null
+    const serializedData = cookies[this.options.name]
 
     return this.deserialize(serializedData)
   }
 
-  async finalize(context: Context, session: SessionState) {
-    if (session.data === session.previousData) {
-      if (session.data == null) {
-        return
-      } else {
-        await this.touch(context, session)
-        return
+  async finalize(
+    context: Context,
+    session: Session,
+    resObject: ResponseObject<any>
+  ): Promise<ResponseObject<any>> {
+    const dataIsChanged = session.data !== session.previousData
+    if (session.data != null) {
+      if (dataIsChanged) {
+        return this.save(context, session, resObject)
       }
-    } else {
-      if (session.data == null) {
-        await this.destroy(context, session)
-        return
-      } else {
-        await this.save(context, session)
-        return
-      }
+      return this.touch(context, session, resObject)
     }
+    if (dataIsChanged) {
+      return this.destroy(context, session, resObject)
+    }
+    return resObject
   }
 
-  touch(context: Context, session: SessionState) {
-    return this.save(context, session)
+  touch(
+    context: Context,
+    session: Session,
+    resObject: ResponseObject<any>
+  ): ResponseObject<any> {
+    return this.save(context, session, resObject)
   }
 
-  async save(context: Context, session: SessionState) {
-    const cookieStore = cookieSelector(context)
-    cookieStore.set([
+  save(
+    context: Context,
+    session: Session,
+    resObject: ResponseObject<any>
+  ): ResponseObject<any> {
+    return appendCookie(resObject, [
       this.options.name,
       this.serialize(session.data),
       this.getCookieOptions(context)
     ])
   }
 
-  destroy(context: Context, session: SessionState) {
-    const cookieStore = cookieSelector(context)
-    cookieStore.set([
+  destroy(
+    context: Context,
+    session: Session,
+    resObject: ResponseObject<any>
+  ): ResponseObject<any> {
+    return appendCookie(resObject, [
       this.options.name,
       '',
       {

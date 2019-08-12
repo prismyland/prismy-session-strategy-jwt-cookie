@@ -1,24 +1,27 @@
 import test, { ExecutionContext } from 'ava'
-import createSession, { SessionState } from 'prismy-session'
-import { testServer } from 'prismy-test-server'
+import { prismy, res } from 'prismy'
+import createSession from 'prismy-session'
+import { testHandler } from 'prismy-test'
 import got from 'got'
 import { CookieJar } from 'tough-cookie'
 import { JWTCookieStrategy } from '../src'
 import jwt from 'jsonwebtoken'
 
-test('JWTCookieStrategy#loadData returns session data', async t => {
+test('sessionSelector selects session data', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      return session.data
-    }
-  }
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
+      return res(session.data)
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         strategy.serialize({
@@ -37,19 +40,21 @@ test('JWTCookieStrategy#loadData returns session data', async t => {
   })
 })
 
-test('JWTCookieStrategy#loadData returns null if session data is invalid(Not JWT)', async t => {
+test('sessionSelector resolves data as null if JWT cookie is invalid(Not JWT)', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      return session.data
-    }
-  }
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
+      return res(session.data)
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         JSON.stringify({
@@ -65,19 +70,21 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Not JWT
   })
 })
 
-test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong Secret)', async t => {
+test('sessionSelector resolves data as null if JWT cookie is invalid(Wrong Secret)', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      return session.data
-    }
-  }
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
+      return res(session.data)
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -98,19 +105,21 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong S
   })
 })
 
-test('JWTCookieStrategy#loadData returns null if session data is invalid(Expired)', async t => {
+test('sessionSelector resolves data as null if JWT cookie is invalid(Expired)', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      return session.data
-    }
-  }
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
+      return res(session.data)
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -134,20 +143,21 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Expired
   })
 })
 
-test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong Algorithm)', async t => {
+test('sessionSelector resolves data as null if JWT cookie is invalid(Wrong Algorithm)', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
-    secret: 'test',
-    algorithm: 'HS256'
+    secret: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      return session.data
-    }
-  }
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
+      return res(session.data)
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -171,20 +181,22 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong A
   })
 })
 
-test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong Issuer)', async t => {
+test('sessionSelector resolves data as null if JWT cookie is invalid(Wrong Issuer)', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
     secret: 'test',
     issuer: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      return session.data
-    }
-  }
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
+      return res(session.data)
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -208,20 +220,22 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong I
   })
 })
 
-test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong Subject)', async t => {
+test('sessionSelector resolves data as null if JWT cookie is invalid(Wrong Subject)', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
     secret: 'test',
-    audience: 'test'
+    subject: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      return session.data
-    }
-  }
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
+      return res(session.data)
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -245,20 +259,22 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong S
   })
 })
 
-test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong Audience)', async t => {
+test('sessionSelector resolves data as null if JWT cookie is invalid(Wrong Audience)', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
     secret: 'test',
     audience: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      return session.data
-    }
-  }
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
+      return res(session.data)
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -282,19 +298,21 @@ test('JWTCookieStrategy#loadData returns null if session data is invalid(Wrong A
   })
 })
 
-test('JWTCookieStrategy#loadData returns null if session data is not defined', async t => {
+test('sessionSelector resolves data as null if JWT cookie is not given', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      return session.data
-    }
-  }
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
+      return res(session.data)
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign({}, 'test')
@@ -308,21 +326,23 @@ test('JWTCookieStrategy#loadData returns null if session data is not defined', a
   })
 })
 
-test('JWTCookieStrategy#finalize saves session.data if changed', async t => {
+test('sessionMiddleware saves session.data if changed', async t => {
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
       session.data = {
         message: 'Hello, World!'
       }
-      return 'OK'
-    }
-  }
+      return res('OK')
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     const postResponse = await got.post(url)
     verifyJWTCookie(t, postResponse.headers['set-cookie']![0], {
       secret: 'test',
@@ -333,22 +353,24 @@ test('JWTCookieStrategy#finalize saves session.data if changed', async t => {
   })
 })
 
-test('JWTCookieStrategy#finalize sets expire date based on maxAge', async t => {
+test('sessionMiddleware sets expire date based on maxAge', async t => {
   const strategy = new JWTCookieStrategy({
     secret: 'test',
     maxAge: 3600
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
       session.data = {
         message: 'Hello, World!'
       }
-      return 'OK'
-    }
-  }
+      return res('OK')
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     const postResponse = await got.post(url)
     verifyJWTCookie(t, postResponse.headers['set-cookie']![0], {
       secret: 'test',
@@ -361,22 +383,24 @@ test('JWTCookieStrategy#finalize sets expire date based on maxAge', async t => {
   })
 })
 
-test('JWTCookieStrategy#finalize uses a function to determine secure attribute', async t => {
+test('sessionMiddleware uses a function to determine secure attribute', async t => {
   const strategy = new JWTCookieStrategy({
     secret: 'test',
     secure: () => true
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
       session.data = {
         message: 'Hello, World!'
       }
-      return 'OK'
-    }
-  }
+      return res('OK')
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     const postResponse = await got.post(url)
     verifyJWTCookie(t, postResponse.headers['set-cookie']![0], {
       secret: 'test',
@@ -388,19 +412,21 @@ test('JWTCookieStrategy#finalize uses a function to determine secure attribute',
   })
 })
 
-test('JWTCookieStrategy#finalize touches maxAge if session data exists', async t => {
+test('sessionMiddleware touches maxAge if session data exists', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      return 'OK'
-    }
-  }
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
+      return res('OK')
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         jwt.sign(
@@ -428,37 +454,41 @@ test('JWTCookieStrategy#finalize touches maxAge if session data exists', async t
   })
 })
 
-test('JWTCookieStrategy#finalize does NOT touch maxAge if session data does not exist', async t => {
+test('sessionMiddleware does NOT touch maxAge if session data does not exist', async t => {
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
-      return 'OK'
-    }
-  }
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
+      return res('OK')
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     const postResponse = await got.post(url)
     t.is(postResponse.headers['set-cookie'], undefined)
   })
 })
 
-test('JWTCookieStrategy#finalize destroys session if changed to null', async t => {
+test('sessionMiddleware destroys session if changed to null', async t => {
   const cookieJar = new CookieJar()
   const strategy = new JWTCookieStrategy({
     secret: 'test'
   })
-  const { Session, SessionMiddleware } = createSession(strategy)
-  class Handler {
-    async handle(@Session() session: SessionState<any>) {
+  const { sessionSelector, sessionMiddleware } = createSession(strategy)
+  const handler = prismy(
+    [sessionSelector],
+    session => {
       session.data = null
-      return 'OK'
-    }
-  }
+      return res('OK')
+    },
+    [sessionMiddleware]
+  )
 
-  await testServer([SessionMiddleware, Handler], async url => {
+  await testHandler(handler, async url => {
     cookieJar.setCookieSync(
       `session=${encodeURIComponent(
         strategy.serialize({
