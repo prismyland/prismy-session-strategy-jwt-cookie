@@ -36,7 +36,7 @@ type InternalCookieStrategyOptions = Required<
   Omit<JWTCookieStrategyOptions, DefaultOptionKeys>
 
 export class JWTCookieStrategy implements SessionStrategy {
-  value?: unknown
+  value?: any
   options: InternalCookieStrategyOptions
 
   constructor(options: JWTCookieStrategyOptions) {
@@ -51,7 +51,7 @@ export class JWTCookieStrategy implements SessionStrategy {
     }
   }
 
-  loadData(context: Context): unknown | null {
+  loadData(context: Context): any | null {
     const cookies = createCookiesSelector()(context)
 
     if (cookies[this.options.name] == null) return null
