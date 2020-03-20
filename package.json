@@ -50,7 +50,7 @@
     "prismy-session": "^1.0.0-pre.0",
     "prismy-test": "^1.0.0",
     "rimraf": "^2.6.3",
-    "tough-cookie": "^3.0.1",
+    "tough-cookie": "^4.0.0",
     "ts-node": "^8.2.0",
     "typescript": "^3.4.5"
   },
