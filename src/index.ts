@@ -2,7 +2,7 @@ import { Context, ResponseObject } from 'prismy'
 import {
   appendCookie,
   createCookiesSelector,
-  CookieSerializeOptions,
+  CookieSerializeOptions
 } from 'prismy-cookie'
 import { SessionStrategy, Session } from 'prismy-session'
 import jwt, { SignOptions, VerifyOptions, Algorithm } from 'jsonwebtoken'
@@ -47,7 +47,7 @@ export class JWTCookieStrategy implements SessionStrategy {
       secure: false,
       path: '/',
       algorithm: 'HS256',
-      ...options,
+      ...options
     }
   }
 
@@ -94,7 +94,7 @@ export class JWTCookieStrategy implements SessionStrategy {
     return appendCookie(resObject, [
       this.options.name,
       this.serialize(session.data),
-      this.getCookieOptions(context),
+      this.getCookieOptions(context)
     ])
   }
 
@@ -108,8 +108,8 @@ export class JWTCookieStrategy implements SessionStrategy {
       '',
       {
         ...this.getCookieOptions(context),
-        maxAge: 0,
-      },
+        maxAge: 0
+      }
     ])
   }
 
@@ -140,14 +140,14 @@ export class JWTCookieStrategy implements SessionStrategy {
       domain,
       httpOnly,
       path,
-      sameSite,
+      sameSite
     }
   }
 
   getJWTSignOptions(): SignOptions {
     const options: SignOptions = {
       expiresIn: `${this.options.maxAge}s`,
-      algorithm: this.options.algorithm,
+      algorithm: this.options.algorithm
     }
     this.copyOnlyConfiguredProp('algorithm', this.options, options)
     this.copyOnlyConfiguredProp('issuer', this.options, options)
@@ -159,7 +159,7 @@ export class JWTCookieStrategy implements SessionStrategy {
   getJWTVerifyOptions(): VerifyOptions {
     const options: VerifyOptions = {
       maxAge: `${this.options.maxAge}s`,
-      algorithms: [this.options.algorithm],
+      algorithms: [this.options.algorithm]
     }
     this.copyOnlyConfiguredProp('issuer', this.options, options)
     this.copyOnlyConfiguredProp('subject', this.options, options)
