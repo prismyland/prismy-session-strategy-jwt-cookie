@@ -6,11 +6,11 @@ import got from 'got'
 import { CookieJar } from 'tough-cookie'
 import { JWTCookieStrategy } from '../src'
 
-test('integration test', async t => {
+test('integration test', async (t) => {
   const cookieJar = new CookieJar()
   const { sessionSelector, sessionMiddleware } = createSession(
     new JWTCookieStrategy({
-      secret: 'test'
+      secret: 'test',
     })
   )
   const handler = prismy(
@@ -26,15 +26,15 @@ test('integration test', async t => {
     [sessionMiddleware]
   )
 
-  await testHandler(handler, async url => {
+  await testHandler(handler, async (url) => {
     const postResponse = await got.post(url, {
-      cookieJar
+      cookieJar,
     })
     t.is(postResponse.body, 'OK')
 
     const getResponse = await got(url, {
       cookieJar,
-      retry: 0
+      retry: 0,
     })
     t.is(getResponse.body, 'Hello, World!')
   })

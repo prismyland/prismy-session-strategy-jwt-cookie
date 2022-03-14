@@ -40,12 +40,12 @@
     "@types/jsonwebtoken": "^8.3.2",
     "@types/node": "^12.0.2",
     "@types/tough-cookie": "^2.3.5",
-    "ava": "^2.2.0",
+    "ava": "^4.1.0",
     "codecov": "^3.5.0",
     "got": "^9.6.0",
-    "nyc": "^14.1.1",
+    "nyc": "^15.1.0",
     "prettier": "^1.17.1",
-    "prismy": "^3.0.0-5",
+    "prismy": "^3.0.0-6",
     "prismy-cookie": "^3.0.0-0",
     "prismy-session": "^3.0.0-0",
     "prismy-test": "^3.0.0-0",
@@ -60,15 +60,14 @@
     "prismy-cookie": ">= 3 < 4"
   },
   "ava": {
-    "compileEnhancements": false,
-    "files": [
-      "specs/**/*.spec.ts"
-    ],
     "extensions": [
       "ts"
     ],
     "require": [
       "ts-node/register"
+    ],
+    "files": [
+      "specs/**/*.spec.ts"
     ]
   },
   "nyc": {
