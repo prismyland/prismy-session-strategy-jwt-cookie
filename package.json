@@ -55,9 +55,9 @@
     "typescript": "^3.4.5"
   },
   "peerDependencies": {
-    "prismy": ">= 3 < 4",
-    "prismy-session": ">= 3 < 4",
-    "prismy-cookie": ">= 3 < 4"
+    "prismy": ">= 3 < 4 || >= 3.0.0-7",
+    "prismy-session": ">= 3 < 4 || >= 3.0.0-1",
+    "prismy-cookie": ">= 3 < 4 || >= 3.0.0-1"
   },
   "ava": {
     "extensions": [
